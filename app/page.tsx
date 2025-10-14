@@ -1,18 +1,29 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Questionnaire from '@/components/Questionnaire';
+import { createModel } from '@/lib/modelService';
 
 export default function Home() {
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const router = useRouter();
 
-  const handleQuestionnaireComplete = (data: {
+  const handleQuestionnaireComplete = async (data: {
     annualSalary: number;
     age: number;
     targetRetirementAge: number;
   }) => {
-    console.log('Questionnaire data:', data);
-    // TODO: Create model and redirect to results page
+    try {
+      setCreating(true);
+      const model = await createModel(data);
+      router.push(`/model/${model.id}`);
+    } catch (error) {
+      console.error('Failed to create model:', error);
+      alert('Failed to create model. Please try again.');
+      setCreating(false);
+    }
   };
 
   return (
@@ -38,6 +49,10 @@ export default function Home() {
               >
                 Start Questionnaire
               </button>
+            </div>
+          ) : creating ? (
+            <div className="bg-white border-2 border-black p-8 text-center">
+              <p className="text-xl text-black">Creating your financial model...</p>
             </div>
           ) : (
             <Questionnaire onComplete={handleQuestionnaireComplete} />
