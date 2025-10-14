@@ -58,7 +58,7 @@ export default function FinancialTable({
         <tr className="bg-gray-50">
           <td
             colSpan={numPeriods + 1}
-            className="px-4 py-2 font-semibold text-gray-700 text-sm uppercase tracking-wide"
+            className="px-6 py-3 font-bold text-black text-base uppercase tracking-wide"
           >
             {title}
           </td>
@@ -67,35 +67,20 @@ export default function FinancialTable({
           .sort((a, b) => a.display_order - b.display_order)
           .map((row) => (
             <tr key={row.id} className="border-b border-gray-200 hover:bg-gray-50">
-              <td className="px-4 py-3 text-left text-gray-900 whitespace-nowrap">
+              <td className="px-6 py-4 text-left text-black text-base font-medium whitespace-nowrap">
                 {row.label}
               </td>
               {Array.from({ length: numPeriods }).map((_, periodIndex) => {
                 const cell = row.cells.find((c) => c.period_index === periodIndex);
-                const isEditable = row.is_editable && cell?.value_type === 'input';
 
                 return (
                   <td
                     key={periodIndex}
-                    className="px-4 py-3 text-right text-gray-700 whitespace-nowrap"
+                    className="px-6 py-4 text-right text-black text-base whitespace-nowrap"
                   >
-                    {isEditable ? (
-                      <input
-                        type="number"
-                        value={cell.input_value ?? ''}
-                        onChange={(e) => {
-                          const value = parseFloat(e.target.value);
-                          if (!isNaN(value) && onCellEdit) {
-                            onCellEdit(row.id, periodIndex, value);
-                          }
-                        }}
-                        className="w-full text-right border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    ) : (
-                      <span title={cell?.formula || undefined}>
-                        {cell ? formatValue(cell) : '-'}
-                      </span>
-                    )}
+                    <span title={cell?.formula || undefined}>
+                      {cell ? formatValue(cell) : '-'}
+                    </span>
                   </td>
                 );
               })}
@@ -109,14 +94,14 @@ export default function FinancialTable({
     <div className="w-full overflow-x-auto">
       <table className="w-full border-collapse bg-white">
         <thead>
-          <tr className="border-b-2 border-gray-300">
-            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 sticky left-0 bg-white">
+          <tr className="border-b-2 border-black">
+            <th className="px-6 py-4 text-left text-base font-bold text-black sticky left-0 bg-white">
               Line Item
             </th>
             {Array.from({ length: numPeriods }).map((_, index) => (
               <th
                 key={index}
-                className="px-4 py-3 text-right text-sm font-semibold text-gray-900 whitespace-nowrap"
+                className="px-6 py-4 text-right text-base font-bold text-black whitespace-nowrap"
               >
                 {getPeriodLabel(index)}
               </th>
