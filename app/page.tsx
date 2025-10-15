@@ -139,6 +139,12 @@ function ModelView({ modelId }: { modelId: string }) {
     }
   };
 
+  const handleToggleView = () => {
+    if (!model) return;
+    const newViewMode = model.view_mode === 'yearly' ? 'monthly' : 'yearly';
+    setModel({ ...model, view_mode: newViewMode });
+  };
+
   if (loading) {
     return (
       <div className="bg-white border-2 border-black p-8 text-center">
@@ -157,11 +163,37 @@ function ModelView({ modelId }: { modelId: string }) {
 
   return (
     <div>
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-black">{model.name}</h2>
-        {model.description && (
-          <p className="text-gray-600 mt-2">{model.description}</p>
-        )}
+      <div className="mb-6 flex justify-between items-start">
+        <div>
+          <h2 className="text-2xl font-bold text-black">{model.name}</h2>
+          {model.description && (
+            <p className="text-gray-600 mt-2">{model.description}</p>
+          )}
+        </div>
+
+        {/* Monthly/Yearly Toggle */}
+        <div className="flex border-2 border-black">
+          <button
+            onClick={handleToggleView}
+            className={`px-4 py-2 font-medium ${
+              model.view_mode === 'yearly'
+                ? 'bg-black text-white'
+                : 'bg-white text-black hover:bg-gray-100'
+            }`}
+          >
+            Yearly
+          </button>
+          <button
+            onClick={handleToggleView}
+            className={`px-4 py-2 font-medium border-l-2 border-black ${
+              model.view_mode === 'monthly'
+                ? 'bg-black text-white'
+                : 'bg-white text-black hover:bg-gray-100'
+            }`}
+          >
+            Monthly
+          </button>
+        </div>
       </div>
 
       <div className="border-2 border-black">
