@@ -11,6 +11,7 @@ export default function Home() {
   const [showQuestionnaire, setShowQuestionnaire] = useState(searchParams.get('view') === 'questionnaire');
   const [creating, setCreating] = useState(false);
   const [currentModelId, setCurrentModelId] = useState<string | null>(searchParams.get('model'));
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Preserve questionnaire values
   const [questionnaireData, setQuestionnaireData] = useState<{
@@ -59,6 +60,8 @@ export default function Home() {
     if (view === 'questionnaire') {
       router.push('/?view=questionnaire');
     } else if (currentModelId) {
+      // Trigger refresh when switching back to model
+      setRefreshTrigger(prev => prev + 1);
       router.push(`/?model=${currentModelId}`);
     }
   };
@@ -109,7 +112,7 @@ export default function Home() {
               initialValues={questionnaireData}
             />
           ) : (
-            <ModelView modelId={currentModelId} />
+            <ModelView modelId={currentModelId} refreshTrigger={refreshTrigger} />
           )}
         </main>
       </div>
@@ -118,17 +121,18 @@ export default function Home() {
 }
 
 // Model View Component
-function ModelView({ modelId }: { modelId: string }) {
+function ModelView({ modelId, refreshTrigger }: { modelId: string; refreshTrigger?: number }) {
   const [model, setModel] = useState<any>(null);
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadModel();
-  }, [modelId]);
+  }, [modelId, refreshTrigger]);
 
   const loadModel = async () => {
     try {
+      setLoading(true);
       const data = await getModel(modelId);
       setModel(data.model);
       setRows(data.rows);

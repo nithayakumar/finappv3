@@ -16,9 +16,14 @@ export default function FinancialTable({
   numPeriods,
   onCellEdit,
 }: FinancialTableProps) {
-  const formatValue = (cell: { calculated_value: number | null; input_value: number | null; display_format: string }) => {
-    const value = cell.calculated_value ?? cell.input_value;
+  const formatValue = (cell: { calculated_value: number | null; input_value: number | null; display_format: string }, isMonthlyView: boolean = false) => {
+    let value = cell.calculated_value ?? cell.input_value;
     if (value === null) return '-';
+
+    // If in monthly view and it's a currency, divide by 12 to get monthly amount
+    if (isMonthlyView && cell.display_format === 'currency') {
+      value = value / 12;
+    }
 
     switch (cell.display_format) {
       case 'currency':
@@ -79,7 +84,7 @@ export default function FinancialTable({
                     className="px-6 py-4 text-right text-black text-base whitespace-nowrap"
                   >
                     <span title={cell?.formula || undefined}>
-                      {cell ? formatValue(cell) : '-'}
+                      {cell ? formatValue(cell, viewMode === 'monthly') : '-'}
                     </span>
                   </td>
                 );
