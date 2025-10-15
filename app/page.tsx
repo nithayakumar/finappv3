@@ -11,6 +11,20 @@ export default function Home() {
   const [showQuestionnaire, setShowQuestionnaire] = useState(searchParams.get('view') === 'questionnaire');
   const [creating, setCreating] = useState(false);
   const [currentModelId, setCurrentModelId] = useState<string | null>(searchParams.get('model'));
+
+  // Preserve questionnaire values
+  const [questionnaireData, setQuestionnaireData] = useState<{
+    annualSalary: string;
+    age: string;
+    targetRetirementAge: string;
+    salaryGrowthRate: string;
+  }>({
+    annualSalary: '',
+    age: '',
+    targetRetirementAge: '',
+    salaryGrowthRate: '',
+  });
+
   const router = useRouter();
 
   const handleQuestionnaireComplete = async (data: {
@@ -21,6 +35,13 @@ export default function Home() {
   }) => {
     try {
       setCreating(true);
+      // Save the data for later
+      setQuestionnaireData({
+        annualSalary: data.annualSalary.toString(),
+        age: data.age.toString(),
+        targetRetirementAge: data.targetRetirementAge.toString(),
+        salaryGrowthRate: data.salaryGrowthRate.toString(),
+      });
       const model = await createModel(data);
       setCurrentModelId(model.id);
       setShowQuestionnaire(false);
@@ -83,7 +104,10 @@ export default function Home() {
               <p className="text-xl text-black">Creating your financial model...</p>
             </div>
           ) : showQuestionnaire || !currentModelId ? (
-            <Questionnaire onComplete={handleQuestionnaireComplete} />
+            <Questionnaire
+              onComplete={handleQuestionnaireComplete}
+              initialValues={questionnaireData}
+            />
           ) : (
             <ModelView modelId={currentModelId} />
           )}

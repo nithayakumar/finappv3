@@ -9,13 +9,19 @@ interface QuestionnaireProps {
     targetRetirementAge: number;
     salaryGrowthRate: number;
   }) => void;
+  initialValues?: {
+    annualSalary: string;
+    age: string;
+    targetRetirementAge: string;
+    salaryGrowthRate: string;
+  };
 }
 
-export default function Questionnaire({ onComplete }: QuestionnaireProps) {
-  const [annualSalary, setAnnualSalary] = useState<string>('');
-  const [age, setAge] = useState<string>('');
-  const [targetRetirementAge, setTargetRetirementAge] = useState<string>('');
-  const [salaryGrowthRate, setSalaryGrowthRate] = useState<string>('');
+export default function Questionnaire({ onComplete, initialValues }: QuestionnaireProps) {
+  const [annualSalary, setAnnualSalary] = useState<string>(initialValues?.annualSalary || '');
+  const [age, setAge] = useState<string>(initialValues?.age || '');
+  const [targetRetirementAge, setTargetRetirementAge] = useState<string>(initialValues?.targetRetirementAge || '');
+  const [salaryGrowthRate, setSalaryGrowthRate] = useState<string>(initialValues?.salaryGrowthRate || '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
