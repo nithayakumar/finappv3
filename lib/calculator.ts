@@ -125,16 +125,27 @@ export class FinancialCalculator {
 }
 
 /**
- * Helper function to format currency
+ * Helper function to format currency with abbreviations (k, M, B)
  */
 export function formatCurrency(value: number | null): string {
   if (value === null) return '$0';
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
+
+  const absValue = Math.abs(value);
+  const sign = value < 0 ? '-' : '';
+
+  if (absValue >= 1_000_000_000) {
+    // Billions
+    return `${sign}$${(absValue / 1_000_000_000).toFixed(1)}B`;
+  } else if (absValue >= 1_000_000) {
+    // Millions
+    return `${sign}$${(absValue / 1_000_000).toFixed(1)}M`;
+  } else if (absValue >= 1_000) {
+    // Thousands
+    return `${sign}$${(absValue / 1_000).toFixed(1)}k`;
+  } else {
+    // Less than 1000
+    return `${sign}$${absValue.toFixed(0)}`;
+  }
 }
 
 /**
