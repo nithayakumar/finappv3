@@ -18,10 +18,10 @@ interface QuestionnaireProps {
 }
 
 export default function Questionnaire({ onComplete, initialValues }: QuestionnaireProps) {
-  const [annualSalary, setAnnualSalary] = useState<string>(initialValues?.annualSalary || '');
-  const [age, setAge] = useState<string>(initialValues?.age || '');
-  const [targetRetirementAge, setTargetRetirementAge] = useState<string>(initialValues?.targetRetirementAge || '');
-  const [salaryGrowthRate, setSalaryGrowthRate] = useState<string>(initialValues?.salaryGrowthRate || '');
+  const [annualSalary, setAnnualSalary] = useState<string>(initialValues?.annualSalary || '120000');
+  const [age, setAge] = useState<string>(initialValues?.age || '30');
+  const [targetRetirementAge, setTargetRetirementAge] = useState<string>(initialValues?.targetRetirementAge || '65');
+  const [salaryGrowthRate, setSalaryGrowthRate] = useState<string>(initialValues?.salaryGrowthRate || '5');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
