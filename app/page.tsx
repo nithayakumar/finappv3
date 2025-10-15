@@ -1,13 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Questionnaire from '@/components/Questionnaire';
-import { createModel } from '@/lib/modelService';
+import FinancialTable from '@/components/FinancialTable';
+import { createModel, getModel } from '@/lib/modelService';
 
 export default function Home() {
-  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const searchParams = useSearchParams();
+  const [showQuestionnaire, setShowQuestionnaire] = useState(searchParams.get('view') === 'questionnaire');
   const [creating, setCreating] = useState(false);
+  const [currentModelId, setCurrentModelId] = useState<string | null>(searchParams.get('model'));
   const router = useRouter();
 
   const handleQuestionnaireComplete = async (data: {
@@ -18,7 +21,10 @@ export default function Home() {
     try {
       setCreating(true);
       const model = await createModel(data);
-      router.push(`/model/${model.id}`);
+      setCurrentModelId(model.id);
+      setShowQuestionnaire(false);
+      setCreating(false);
+      router.push(`/?model=${model.id}`);
     } catch (error) {
       console.error('Failed to create model:', error);
       alert('Failed to create model. Please try again.');
@@ -26,39 +32,121 @@ export default function Home() {
     }
   };
 
+  const handleViewToggle = (view: 'questionnaire' | 'model') => {
+    setShowQuestionnaire(view === 'questionnaire');
+    if (view === 'questionnaire') {
+      router.push('/?view=questionnaire');
+    } else if (currentModelId) {
+      router.push(`/?model=${currentModelId}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto p-8">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-black">FinAppV3</h1>
-          <p className="text-gray-600 mt-2">Financial Planning & Modeling</p>
+        <header className="mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold text-black">FinAppV3</h1>
+            <p className="text-gray-600 mt-2">Financial Planning & Modeling</p>
+          </div>
+
+          {currentModelId && (
+            <div className="flex border-2 border-black">
+              <button
+                onClick={() => handleViewToggle('questionnaire')}
+                className={`px-4 py-2 font-medium transition-colors ${
+                  showQuestionnaire
+                    ? 'bg-black text-white'
+                    : 'bg-white text-black hover:bg-gray-100'
+                }`}
+              >
+                Questionnaire
+              </button>
+              <button
+                onClick={() => handleViewToggle('model')}
+                className={`px-4 py-2 font-medium border-l-2 border-black transition-colors ${
+                  !showQuestionnaire
+                    ? 'bg-black text-white'
+                    : 'bg-white text-black hover:bg-gray-100'
+                }`}
+              >
+                Model
+              </button>
+            </div>
+          )}
         </header>
 
         <main>
-          {!showQuestionnaire ? (
-            <div className="bg-white border-2 border-black p-6">
-              <h2 className="text-xl font-semibold mb-4 text-black">Get Started</h2>
-              <p className="text-gray-700 mb-6">
-                Create your financial model by answering a few questions about your income
-                and retirement goals.
-              </p>
-
-              <button
-                onClick={() => setShowQuestionnaire(true)}
-                className="bg-black text-white px-6 py-2 font-medium hover:bg-gray-800 transition-colors"
-              >
-                Start Questionnaire
-              </button>
-            </div>
-          ) : creating ? (
+          {creating ? (
             <div className="bg-white border-2 border-black p-8 text-center">
               <p className="text-xl text-black">Creating your financial model...</p>
             </div>
-          ) : (
+          ) : showQuestionnaire || !currentModelId ? (
             <Questionnaire onComplete={handleQuestionnaireComplete} />
+          ) : (
+            <ModelView modelId={currentModelId} />
           )}
         </main>
       </div>
     </div>
   );
 }
+
+// Model View Component
+function ModelView({ modelId }: { modelId: string }) {
+  const [model, setModel] = useState<any>(null);
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadModel();
+  }, [modelId]);
+
+  const loadModel = async () => {
+    try {
+      const data = await getModel(modelId);
+      setModel(data.model);
+      setRows(data.rows);
+    } catch (error) {
+      console.error('Failed to load model:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white border-2 border-black p-8 text-center">
+        <p className="text-xl text-black">Loading model...</p>
+      </div>
+    );
+  }
+
+  if (!model) {
+    return (
+      <div className="bg-white border-2 border-black p-8 text-center">
+        <p className="text-xl text-black">Model not found</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-black">{model.name}</h2>
+        {model.description && (
+          <p className="text-gray-600 mt-2">{model.description}</p>
+        )}
+      </div>
+
+      <div className="border-2 border-black">
+        <FinancialTable
+          rows={rows}
+          viewMode={model.view_mode}
+          numPeriods={model.num_periods}
+        />
+      </div>
+    </div>
+  );
+}
+
