@@ -17,6 +17,7 @@ export default function Home() {
     annualSalary: number;
     age: number;
     targetRetirementAge: number;
+    salaryGrowthRate: number;
   }) => {
     try {
       setCreating(true);

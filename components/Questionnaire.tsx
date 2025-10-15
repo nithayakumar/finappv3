@@ -3,13 +3,19 @@
 import { useState } from 'react';
 
 interface QuestionnaireProps {
-  onComplete: (data: { annualSalary: number; age: number; targetRetirementAge: number }) => void;
+  onComplete: (data: {
+    annualSalary: number;
+    age: number;
+    targetRetirementAge: number;
+    salaryGrowthRate: number;
+  }) => void;
 }
 
 export default function Questionnaire({ onComplete }: QuestionnaireProps) {
   const [annualSalary, setAnnualSalary] = useState<string>('');
   const [age, setAge] = useState<string>('');
   const [targetRetirementAge, setTargetRetirementAge] = useState<string>('');
+  const [salaryGrowthRate, setSalaryGrowthRate] = useState<string>('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,6 +24,7 @@ export default function Questionnaire({ onComplete }: QuestionnaireProps) {
         annualSalary: parseFloat(annualSalary),
         age: parseInt(age),
         targetRetirementAge: parseInt(targetRetirementAge),
+        salaryGrowthRate: parseFloat(salaryGrowthRate),
       });
     }
   };
@@ -31,7 +38,9 @@ export default function Questionnaire({ onComplete }: QuestionnaireProps) {
       parseInt(age) < 150 &&
       targetRetirementAge &&
       parseInt(targetRetirementAge) > parseInt(age) &&
-      parseInt(targetRetirementAge) < 150
+      parseInt(targetRetirementAge) < 150 &&
+      salaryGrowthRate &&
+      parseFloat(salaryGrowthRate) >= 0
     );
   };
 
@@ -40,37 +49,39 @@ export default function Questionnaire({ onComplete }: QuestionnaireProps) {
       ? parseInt(targetRetirementAge) - parseInt(age)
       : 0;
 
-  return (
-    <div className="max-w-2xl mx-auto">
-      <div className="bg-white border-2 border-black p-8">
-        <h2 className="text-2xl font-bold text-black mb-8">Financial Planning Questions</h2>
+  // Calculate monthly growth rate
+  const monthlyGrowthRate = salaryGrowthRate
+    ? (Math.pow(1 + parseFloat(salaryGrowthRate) / 100, 1/12) - 1) * 100
+    : 0;
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+  return (
+    <div className="max-w-4xl mx-auto">
+      <div className="bg-white border-2 border-black p-6">
+        <h2 className="text-xl font-bold text-black mb-4">Financial Planning</h2>
+
+        <form onSubmit={handleSubmit} className="space-y-3">
           {/* Annual Salary */}
-          <div>
-            <label htmlFor="salary" className="block text-lg font-bold text-black mb-3">
-              What is your annual salary?
+          <div className="flex items-center gap-4">
+            <label htmlFor="salary" className="text-base font-bold text-black w-64 flex-shrink-0">
+              Annual Salary
             </label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl text-black">
-                $
-              </span>
+            <div className="relative flex-grow">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base text-black">$</span>
               <input
                 id="salary"
                 type="number"
                 value={annualSalary}
                 onChange={(e) => setAnnualSalary(e.target.value)}
                 placeholder="120000"
-                className="w-full text-xl text-black pl-10 pr-4 py-3 border-2 border-black focus:outline-none focus:ring-4 focus:ring-gray-300"
+                className="w-full text-base text-black pl-8 pr-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-gray-300"
               />
             </div>
-            <p className="mt-2 text-sm text-gray-600">Enter your current annual income</p>
           </div>
 
           {/* Age */}
-          <div>
-            <label htmlFor="age" className="block text-lg font-bold text-black mb-3">
-              What is your current age?
+          <div className="flex items-center gap-4">
+            <label htmlFor="age" className="text-base font-bold text-black w-64 flex-shrink-0">
+              Current Age
             </label>
             <input
               id="age"
@@ -78,15 +89,14 @@ export default function Questionnaire({ onComplete }: QuestionnaireProps) {
               value={age}
               onChange={(e) => setAge(e.target.value)}
               placeholder="30"
-              className="w-full text-xl text-black px-4 py-3 border-2 border-black focus:outline-none focus:ring-4 focus:ring-gray-300"
+              className="flex-grow text-base text-black px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-gray-300"
             />
-            <p className="mt-2 text-sm text-gray-600">Your age in years</p>
           </div>
 
           {/* Target Retirement Age */}
-          <div>
-            <label htmlFor="retirement" className="block text-lg font-bold text-black mb-3">
-              What is your target retirement age?
+          <div className="flex items-center gap-4">
+            <label htmlFor="retirement" className="text-base font-bold text-black w-64 flex-shrink-0">
+              Target Retirement Age
             </label>
             <input
               id="retirement"
@@ -94,22 +104,45 @@ export default function Questionnaire({ onComplete }: QuestionnaireProps) {
               value={targetRetirementAge}
               onChange={(e) => setTargetRetirementAge(e.target.value)}
               placeholder="65"
-              className="w-full text-xl text-black px-4 py-3 border-2 border-black focus:outline-none focus:ring-4 focus:ring-gray-300"
+              className="flex-grow text-base text-black px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-gray-300"
             />
-            <p className="mt-2 text-sm text-gray-600">When do you plan to retire?</p>
             {workingYears > 0 && (
-              <p className="mt-3 text-base font-medium text-black">
-                Working years: {workingYears} years
-              </p>
+              <span className="text-sm text-black whitespace-nowrap">
+                ({workingYears} years)
+              </span>
+            )}
+          </div>
+
+          {/* Annual Salary Growth Rate */}
+          <div className="flex items-center gap-4">
+            <label htmlFor="growth" className="text-base font-bold text-black w-64 flex-shrink-0">
+              Annual Salary Growth
+            </label>
+            <div className="relative flex-grow">
+              <input
+                id="growth"
+                type="number"
+                step="0.1"
+                value={salaryGrowthRate}
+                onChange={(e) => setSalaryGrowthRate(e.target.value)}
+                placeholder="5.0"
+                className="w-full text-base text-black px-3 py-2 border-2 border-black focus:outline-none focus:ring-2 focus:ring-gray-300"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-base text-black">%</span>
+            </div>
+            {salaryGrowthRate && parseFloat(salaryGrowthRate) >= 0 && (
+              <span className="text-sm text-black whitespace-nowrap">
+                (~{monthlyGrowthRate.toFixed(2)}% monthly)
+              </span>
             )}
           </div>
 
           {/* Submit Button */}
-          <div className="pt-4">
+          <div className="pt-3">
             <button
               type="submit"
               disabled={!isFormValid()}
-              className="w-full px-6 py-4 bg-black text-white text-lg font-medium hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="w-full px-6 py-3 bg-black text-white text-base font-medium hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
               Create Model
             </button>

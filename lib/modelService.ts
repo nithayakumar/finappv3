@@ -5,13 +5,14 @@ interface CreateModelParams {
   annualSalary: number;
   age: number;
   targetRetirementAge: number;
+  salaryGrowthRate: number;
 }
 
 /**
  * Create a financial model with initial data from questionnaire
  */
 export async function createModel(params: CreateModelParams) {
-  const { annualSalary, age, targetRetirementAge } = params;
+  const { annualSalary, age, targetRetirementAge, salaryGrowthRate } = params;
   const workingYears = targetRetirementAge - age;
 
   // Create the model
@@ -51,18 +52,21 @@ export async function createModel(params: CreateModelParams) {
     throw new Error('Failed to create rows: ' + rowsError?.message);
   }
 
-  // Create cells for annual salary (one for each year)
+  // Create cells for annual salary (one for each year) with growth
   const cells: Omit<TableCell, 'id' | 'created_at' | 'updated_at'>[] = [];
   const salaryRow = createdRows[0];
 
   for (let i = 0; i < workingYears; i++) {
+    // Calculate salary for this year with compound growth
+    const salaryForYear = annualSalary * Math.pow(1 + salaryGrowthRate / 100, i);
+
     cells.push({
       row_id: salaryRow.id,
       period_index: i,
       value_type: 'input',
-      input_value: annualSalary,
+      input_value: salaryForYear,
       formula: null,
-      calculated_value: annualSalary,
+      calculated_value: salaryForYear,
       display_format: 'currency',
     });
   }
